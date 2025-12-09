@@ -1,0 +1,31 @@
+Package: dist_lag_het
+Type: Package
+Title: Treatment Effect Estimation in Complex Designs
+Version: 0.1.0
+Authors@R: c(
+    person("Clément", "de Chaisemartin", role = c("aut"),
+           email = "clement.dechaisemartin@sciencespo.fr"),
+    person("Xavier", "D'Haultfoeuille", role = c("aut"),
+           email = "xavier.dhaultfoeuille@ensae.fr"),
+    person("Henri", "Fabre", role = c("cre", "ctb"),
+           email = "henri.fabre@ensae.fr"))
+Description: Implements estimation methods for treatment effects in complex
+    designs under parallel-trends assumptions. Based on the methodology
+    described in "Treatment-Effect Estimation in Complex Designs under a
+    Parallel-trends Assumption" by de Chaisemartin and D'Haultfoeuille.
+    Provides three model specifications: base model with K lags, full dynamics
+    model using all available periods, and interactions model with lag interaction
+    terms.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.5.0)
+Imports:
+    MASS
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+RoxygenNote: 7.1.0
+VignetteBuilder: knitr
