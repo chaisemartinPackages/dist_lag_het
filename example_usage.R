@@ -79,71 +79,29 @@ result_int <- estim_RC_model_unified(
 summary_RC_model(result_int)
 
 # ============================================================================
-# STEP 3: Bootstrap for standard errors (optional)
+# STEP 3: Estimate model with bootstrap standard errors
 # ============================================================================
 
-cat("\n=== COMPUTING BOOTSTRAP STANDARD ERRORS ===\n")
+cat("\n=== ESTIMATING WITH BOOTSTRAP STANDARD ERRORS ===\n")
 
-# Number of bootstrap iterations
-B <- 100  # Use 1000 for real analysis
-
-# Get unique groups
-list_groups <- unique(data$group)
-n_groups <- length(list_groups)
-
-# Storage for bootstrap results
-n_coef <- length(result_base$B_hat)
-Bhat_boot <- matrix(0, B, n_coef)
-
-# Progress indicator
-pb <- txtProgressBar(min = 0, max = B, style = 3)
-
-for (b in 1:B) {
-  # Sample groups with replacement
-  groups_boot <- sample(list_groups, n_groups, replace = TRUE)
-
-  # Calculate weights (how many times each group appears)
-  weights <- as.numeric(table(factor(groups_boot, levels = list_groups)))
-
-  # Estimate model on bootstrap sample
-  tryCatch({
-    result_boot <- estim_RC_model_base(
-      K = 2,
-      data = data,
-      group_col = "group",
-      deltaY_col = "delta_Y",
-      deltaD_col = "delta_D",
-      D_col = "D",
-      X_cols = c("X1", "X2"),
-      weights = weights
-    )
-    Bhat_boot[b, ] <- result_boot$B_hat
-  }, error = function(e) {
-    Bhat_boot[b, ] <- NA
-  })
-
-  setTxtProgressBar(pb, b)
-}
-close(pb)
-
-# Remove failed iterations
-Bhat_boot <- Bhat_boot[complete.cases(Bhat_boot), , drop = FALSE]
-
-# Compute standard errors
-se_boot <- apply(Bhat_boot, 2, sd)
-
-# Display results
-cat("\n\n=== BOOTSTRAP RESULTS ===\n")
-results_table <- data.frame(
-  Coefficient = names(result_base$B_hat),
-  Estimate = as.numeric(result_base$B_hat),
-  Std_Error = se_boot,
-  t_stat = as.numeric(result_base$B_hat) / se_boot,
-  CI_lower = as.numeric(result_base$B_hat) - 1.96 * se_boot,
-  CI_upper = as.numeric(result_base$B_hat) + 1.96 * se_boot,
-  N_obs = result_base$Nobs
+# Estimate the model with bootstrap standard errors
+# For demonstration, we use B=100 (use B=1000 or more for real analysis)
+result_with_bootstrap <- estim_RC_model_unified(
+  K = 2,
+  data = data,
+  group_col = "group",
+  deltaY_col = "delta_Y",
+  deltaD_col = "delta_D",
+  D_col = "D",
+  X_cols = c("X1", "X2"),
+  model = "base",
+  bootstrap = TRUE,     # Enable bootstrap
+  B = 100,              # Number of bootstrap iterations
+  conf_level = 0.95     # 95% confidence intervals
 )
-print(results_table, row.names = FALSE)
+
+# Display results with bootstrap statistics
+summary_RC_model(result_with_bootstrap)
 
 # ============================================================================
 # STEP 4: Save results (optional)
@@ -154,12 +112,23 @@ save(
   result_base,
   result_full,
   result_int,
-  results_table,
+  result_with_bootstrap,
   file = "estimation_results.RData"
 )
 
-# Save to CSV
-write.csv(results_table, "estimation_results.csv", row.names = FALSE)
+# Save bootstrap results to CSV (if bootstrap was computed)
+if (!is.null(result_with_bootstrap$se)) {
+  results_table <- data.frame(
+    Coefficient = names(result_with_bootstrap$B_hat),
+    Estimate = as.numeric(result_with_bootstrap$B_hat),
+    Std_Error = as.numeric(result_with_bootstrap$se),
+    t_stat = as.numeric(result_with_bootstrap$t_stat),
+    CI_lower = as.numeric(result_with_bootstrap$ci_lower),
+    CI_upper = as.numeric(result_with_bootstrap$ci_upper),
+    N_obs = result_with_bootstrap$Nobs
+  )
+  write.csv(results_table, "estimation_results.csv", row.names = FALSE)
+}
 
 cat("\n=== ANALYSIS COMPLETE ===\n")
 cat("Results saved to estimation_results.RData and estimation_results.csv\n")

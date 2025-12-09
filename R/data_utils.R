@@ -94,7 +94,8 @@ generate_did_data <- function(n_groups = 50, n_periods = 5, treatment_prob = 0.3
 
 #' Print Summary of RC Model Results
 #'
-#' Provides a formatted summary of estimation results.
+#' Provides a formatted summary of estimation results, including bootstrap
+#' standard errors and confidence intervals if available.
 #'
 #' @param result A list returned by estim_RC_model_unified or related functions.
 #'
@@ -106,7 +107,7 @@ generate_did_data <- function(n_groups = 50, n_periods = 5, treatment_prob = 0.3
 #' result <- estim_RC_model_unified(K = 2, data = data, group_col = "group",
 #'                                   deltaY_col = "delta_Y", deltaD_col = "delta_D",
 #'                                   D_col = "D", X_cols = c("X1", "X2"),
-#'                                   model = "base")
+#'                                   model = "base", bootstrap = TRUE)
 #' summary_RC_model(result)
 #' }
 #'
@@ -116,20 +117,47 @@ summary_RC_model <- function(result) {
   cat("RC Model Estimation Results\n")
   cat("========================================\n\n")
 
-  cat("Model type:", result$model, "\n\n")
+  cat("Model type:", result$model, "\n")
+
+  # Check if bootstrap was performed
+  has_bootstrap <- !is.null(result$se)
+
+  if (has_bootstrap) {
+    cat(sprintf("Bootstrap iterations: %d\n", result$boot_iterations))
+  }
+  cat("\n")
 
   cat("Covariate coefficients (gamma):\n")
   print(result$gamma)
   cat("\n")
 
   cat("Treatment effect coefficients (B_hat):\n")
-  coef_df <- data.frame(
-    Coefficient = names(result$B_hat),
-    Estimate = as.numeric(result$B_hat),
-    N_obs = result$Nobs
-  )
+
+  # Create data frame with appropriate columns
+  if (has_bootstrap) {
+    coef_df <- data.frame(
+      Coefficient = names(result$B_hat),
+      Estimate = as.numeric(result$B_hat),
+      Std_Error = as.numeric(result$se),
+      t_stat = as.numeric(result$t_stat),
+      CI_lower = as.numeric(result$ci_lower),
+      CI_upper = as.numeric(result$ci_upper),
+      N_obs = result$Nobs
+    )
+  } else {
+    coef_df <- data.frame(
+      Coefficient = names(result$B_hat),
+      Estimate = as.numeric(result$B_hat),
+      N_obs = result$Nobs
+    )
+  }
+
   print(coef_df, row.names = FALSE)
   cat("\n")
+
+  if (has_bootstrap) {
+    cat("Note: Standard errors and confidence intervals computed via bootstrap.\n\n")
+  }
 
   invisible(result)
 }

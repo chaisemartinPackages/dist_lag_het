@@ -34,7 +34,6 @@ The package provides three model specifications:
 
 ```r
 # Base model
-library(DistLagHet)
 result <- estim_RC_model_unified(
   K = 2,
   data = data,
@@ -49,6 +48,22 @@ result <- estim_RC_model_unified(
 
 # View results
 summary_RC_model(result)
+
+# Estimate with bootstrap standard errors
+result_boot <- estim_RC_model_unified(
+  K = 2,
+  data = data,
+  group_col = "group",
+  deltaY_col = "delta_Y",
+  deltaD_col = "delta_D",
+  D_col = "D",
+  X_cols = c("X1", "X2"),
+  model = "base",
+  bootstrap = TRUE,  # Enable bootstrap
+  B = 1000           # Number of bootstrap iterations
+)
+
+summary_RC_model(result_boot)
 ```
 
 #### Direct Model Functions
@@ -72,8 +87,7 @@ The first differences should exclude the first period (which would have NA value
 
 ### Main Estimation Functions
 
-- `estim_RC_model_unified()`: Unified interface for all models
-
+- `estim_RC_model_unified()`: Unified interface for all models with optional bootstrap standard errors
 
 ### Utility Functions
 
