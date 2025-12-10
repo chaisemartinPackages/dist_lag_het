@@ -1,8 +1,8 @@
 # dist_lag_het
 
-R package for treatment-effect estimation in complex designs under parallel-trends assumptions.
+R package to estimate distributed lag regressions with heterogeneous treatment effects.
 
-Based on the methodology described in *"Treatment-Effect Estimation in Complex Designs under a Parallel-trends Assumption"* by Clément de Chaisemartin and Xavier D'Haultfoeuille.
+Based on the methodology described in Sections 4.2 and 4.3 of *"Treatment-Effect Estimation in Complex Designs under a Parallel-trends Assumption"* by Clément de Chaisemartin and Xavier D'Haultfoeuille.
 
 ## Installation
 
@@ -17,14 +17,6 @@ remotes::install_github("chaisemartinpackages/dist_lag_het")
 
 
 ```
-
-## Features
-
-The package provides three model specifications:
-
-1. **Base Model** (`model = "base"`): Standard RC model with K lags
-2. **Full Dynamics** (`model = "full_dynamics"`): Uses all available periods
-3. **Interactions** (`model = "interactions"`): Includes interaction terms between lags
 
 ## Quick Start
 
@@ -83,6 +75,17 @@ Your data should be in long format with the following columns:
 - **X1, X2, ...**: Covariates
 
 The first differences should exclude the first period (which would have NA values).
+
+## Options
+
+K: the number of treatment lags assumed to affect the current outcome. For instance, K=2 assumes that the current treatment and its first two lags affect the outcome.  
+
+The package provides three model specifications:
+1. **Base Model** (`model = "base"`): Standard distributed-lag model with K lags
+2. **Interactions** (`model = "interactions"`): Includes interaction terms between current treatments and lags
+3. **Full Dynamics** (`model = "full_dynamics"`): Allows all treatment lags up to period one to affect the outcome (then K does not need to be specified).
+
+weights: to weight the estimation. 
 
 ## Functions
 
