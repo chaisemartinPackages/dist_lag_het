@@ -18,12 +18,15 @@
 #' @param B Integer. Number of bootstrap iterations (default: 200, ignored if bootstrap = FALSE).
 #' @param conf_level Numeric. Confidence level for bootstrap intervals (default: 0.95, ignored if bootstrap = FALSE).
 #' @param verbose Logical. Show bootstrap progress bar (default: TRUE, ignored if bootstrap = FALSE).
+#' @param same_sample Logical. If TRUE, restrict estimation to groups identified for ALL
+#'   coefficients simultaneously (default: FALSE). When TRUE, also returns \code{n_valid_groups}.
 #'
 #' @return A list containing:
 #'   \item{gamma}{Coefficients for covariates}
 #'   \item{B_hat}{Estimated treatment effect coefficients (betas)}
 #'   \item{Nobs}{Number of observations used for each coefficient}
 #'   \item{model}{Model type used}
+#'   \item{n_valid_groups}{Number of groups identified for all coefficients (only if same_sample = TRUE)}
 #'   If bootstrap = TRUE, also includes:
 #'   \item{se}{Bootstrap standard errors}
 #'   \item{t_stat}{t-statistics (B_hat / se)}
@@ -72,7 +75,7 @@ estim_RC_model_unified <- function(K = NULL, data, group_col, deltaY_col, deltaD
                                    D_col, X_cols, weights = NULL,
                                    model = c("base", "full_dynamics", "interactions"),
                                    bootstrap = FALSE, B = 200, conf_level = 0.95,
-                                   verbose = TRUE) {
+                                   verbose = TRUE, same_sample = FALSE) {
 
   model <- match.arg(model)
 
@@ -80,17 +83,17 @@ estim_RC_model_unified <- function(K = NULL, data, group_col, deltaY_col, deltaD
   if (model == "base") {
     if (is.null(K)) stop("K must be specified for base model")
     result <- estim_RC_model_base(K, data, group_col, deltaY_col, deltaD_col,
-                               D_col, X_cols, weights)
+                               D_col, X_cols, weights, same_sample)
 
   } else if (model == "full_dynamics") {
     if (!is.null(K)) warning("K is ignored for full_dynamics model")
     result <- estim_RC_model_full(K = NULL, data, group_col, deltaY_col, deltaD_col,
-                               D_col, X_cols, weights)
+                               D_col, X_cols, weights, same_sample)
 
   } else if (model == "interactions") {
     if (is.null(K)) stop("K must be specified for interactions model")
     result <- estim_RC_model_interactions(K, data, group_col, deltaY_col, deltaD_col,
-                                       D_col, X_cols, weights)
+                                       D_col, X_cols, weights, same_sample)
   }
 
   # If bootstrap is requested, compute standard errors
@@ -106,7 +109,8 @@ estim_RC_model_unified <- function(K = NULL, data, group_col, deltaY_col, deltaD
       K = K,
       B = B,
       conf_level = conf_level,
-      verbose = verbose
+      verbose = verbose,
+      same_sample = same_sample
     )
 
     # Add bootstrap results to output
@@ -132,7 +136,7 @@ estim_RC_model_unified <- function(K = NULL, data, group_col, deltaY_col, deltaD
 #'
 #' @export
 estim_RC_model_base <- function(K, data, group_col, deltaY_col, deltaD_col,
-                                D_col, X_cols, weights = NULL) {
+                                D_col, X_cols, weights = NULL, same_sample = FALSE) {
 
   # Convert to dataframe if needed
   if (!is.data.frame(data)) {
@@ -171,7 +175,8 @@ estim_RC_model_base <- function(K, data, group_col, deltaY_col, deltaD_col,
     DeltaD = DeltaD,
     D = D,
     X = X,
-    weights = weights
+    weights = weights,
+    same_sample = same_sample
   )
 
   # Add names and model type
@@ -193,7 +198,7 @@ estim_RC_model_base <- function(K, data, group_col, deltaY_col, deltaD_col,
 #'
 #' @export
 estim_RC_model_full <- function(K = NULL, data, group_col, deltaY_col, deltaD_col,
-                                D_col, X_cols, weights = NULL) {
+                                D_col, X_cols, weights = NULL, same_sample = FALSE) {
 
   # Convert to dataframe if needed
   if (!is.data.frame(data)) {
@@ -237,7 +242,8 @@ estim_RC_model_full <- function(K = NULL, data, group_col, deltaY_col, deltaD_co
     DeltaD = DeltaD,
     X = X,
     weights = weights,
-    group_sizes = group_sizes
+    group_sizes = group_sizes,
+    same_sample = same_sample
   )
 
   # Add names and model type
@@ -259,7 +265,7 @@ estim_RC_model_full <- function(K = NULL, data, group_col, deltaY_col, deltaD_co
 #'
 #' @export
 estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_col,
-                                        D_col, X_cols, weights = NULL) {
+                                        D_col, X_cols, weights = NULL, same_sample = FALSE) {
 
   # Convert to dataframe if needed
   if (!is.data.frame(data)) {
@@ -298,7 +304,8 @@ estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_c
     DeltaD = DeltaD,
     D = D,
     X = X,
-    weights = weights
+    weights = weights,
+    same_sample = same_sample
   )
 
   # Create names for coefficients
@@ -351,7 +358,8 @@ estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_c
 #' @keywords internal
 .bootstrap_RC_model_internal <- function(result, data, group_col, deltaY_col, deltaD_col,
                                          D_col, X_cols, K = NULL, B = 1000,
-                                         conf_level = 0.95, verbose = TRUE) {
+                                         conf_level = 0.95, verbose = TRUE,
+                                         same_sample = FALSE) {
 
   # Validate inputs
   if (!is.list(result) || !all(c("B_hat", "model") %in% names(result))) {
@@ -399,7 +407,8 @@ estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_c
           deltaD_col = deltaD_col,
           D_col = D_col,
           X_cols = X_cols,
-          weights = weights
+          weights = weights,
+          same_sample = same_sample
         )
       } else if (model_type == "full_dynamics") {
         result_boot <- estim_RC_model_full(
@@ -410,7 +419,8 @@ estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_c
           deltaD_col = deltaD_col,
           D_col = D_col,
           X_cols = X_cols,
-          weights = weights
+          weights = weights,
+          same_sample = same_sample
         )
       } else if (model_type == "interactions") {
         result_boot <- estim_RC_model_interactions(
@@ -421,7 +431,8 @@ estim_RC_model_interactions <- function(K, data, group_col, deltaY_col, deltaD_c
           deltaD_col = deltaD_col,
           D_col = D_col,
           X_cols = X_cols,
-          weights = weights
+          weights = weights,
+          same_sample = same_sample
         )
       }
 

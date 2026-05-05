@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // build_M_matrix_cpp
 NumericMatrix build_M_matrix_cpp(NumericVector DeltaD_g, int nb_u, int K);
-RcppExport SEXP _distlaghet_build_M_matrix_cpp(SEXP DeltaD_gSEXP, SEXP nb_uSEXP, SEXP KSEXP) {
+RcppExport SEXP _DistLagHet_build_M_matrix_cpp(SEXP DeltaD_gSEXP, SEXP nb_uSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,7 +26,7 @@ END_RCPP
 }
 // compute_projection_cpp
 Eigen::MatrixXd compute_projection_cpp(Eigen::Map<Eigen::MatrixXd> M_g);
-RcppExport SEXP _distlaghet_compute_projection_cpp(SEXP M_gSEXP) {
+RcppExport SEXP _DistLagHet_compute_projection_cpp(SEXP M_gSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -37,7 +37,7 @@ END_RCPP
 }
 // extract_by_indices_cpp
 NumericVector extract_by_indices_cpp(NumericVector data, IntegerVector indices);
-RcppExport SEXP _distlaghet_extract_by_indices_cpp(SEXP dataSEXP, SEXP indicesSEXP) {
+RcppExport SEXP _DistLagHet_extract_by_indices_cpp(SEXP dataSEXP, SEXP indicesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,7 +49,7 @@ END_RCPP
 }
 // phase1_group_cpp
 List phase1_group_cpp(NumericVector DeltaY_g, NumericMatrix X_g, NumericVector DeltaD_g, int nb_u, int K, double sqrt_weight);
-RcppExport SEXP _distlaghet_phase1_group_cpp(SEXP DeltaY_gSEXP, SEXP X_gSEXP, SEXP DeltaD_gSEXP, SEXP nb_uSEXP, SEXP KSEXP, SEXP sqrt_weightSEXP) {
+RcppExport SEXP _DistLagHet_phase1_group_cpp(SEXP DeltaY_gSEXP, SEXP X_gSEXP, SEXP DeltaD_gSEXP, SEXP nb_uSEXP, SEXP KSEXP, SEXP sqrt_weightSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,7 +65,7 @@ END_RCPP
 }
 // phase2_group_cpp
 List phase2_group_cpp(NumericMatrix M_g, NumericVector DeltaY_Xg_gamma, int K, double weight_j);
-RcppExport SEXP _distlaghet_phase2_group_cpp(SEXP M_gSEXP, SEXP DeltaY_Xg_gammaSEXP, SEXP KSEXP, SEXP weight_jSEXP) {
+RcppExport SEXP _DistLagHet_phase2_group_cpp(SEXP M_gSEXP, SEXP DeltaY_Xg_gammaSEXP, SEXP KSEXP, SEXP weight_jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -78,8 +78,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // estim_RC_model_cpp_full
-List estim_RC_model_cpp_full(int K, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericVector D, NumericMatrix X, NumericVector weights);
-RcppExport SEXP _distlaghet_estim_RC_model_cpp_full(SEXP KSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP DSEXP, SEXP XSEXP, SEXP weightsSEXP) {
+List estim_RC_model_cpp_full(int K, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericVector D, NumericMatrix X, NumericVector weights, bool same_sample);
+RcppExport SEXP _DistLagHet_estim_RC_model_cpp_full(SEXP KSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP DSEXP, SEXP XSEXP, SEXP weightsSEXP, SEXP same_sampleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -91,13 +91,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type D(DSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(estim_RC_model_cpp_full(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights));
+    Rcpp::traits::input_parameter< bool >::type same_sample(same_sampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(estim_RC_model_cpp_full(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample));
     return rcpp_result_gen;
 END_RCPP
 }
 // build_M_matrix_full_cpp
 NumericMatrix build_M_matrix_full_cpp(NumericVector DeltaD_g, int T_periods);
-RcppExport SEXP _distlaghet_build_M_matrix_full_cpp(SEXP DeltaD_gSEXP, SEXP T_periodsSEXP) {
+RcppExport SEXP _DistLagHet_build_M_matrix_full_cpp(SEXP DeltaD_gSEXP, SEXP T_periodsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -108,8 +109,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // estim_RC_model_full_cpp
-List estim_RC_model_full_cpp(int T_periods, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericMatrix X, NumericVector weights, IntegerVector group_sizes);
-RcppExport SEXP _distlaghet_estim_RC_model_full_cpp(SEXP T_periodsSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP XSEXP, SEXP weightsSEXP, SEXP group_sizesSEXP) {
+List estim_RC_model_full_cpp(int T_periods, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericMatrix X, NumericVector weights, IntegerVector group_sizes, bool same_sample);
+RcppExport SEXP _DistLagHet_estim_RC_model_full_cpp(SEXP T_periodsSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP XSEXP, SEXP weightsSEXP, SEXP group_sizesSEXP, SEXP same_sampleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -121,13 +122,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type group_sizes(group_sizesSEXP);
-    rcpp_result_gen = Rcpp::wrap(estim_RC_model_full_cpp(T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes));
+    Rcpp::traits::input_parameter< bool >::type same_sample(same_sampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(estim_RC_model_full_cpp(T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes, same_sample));
     return rcpp_result_gen;
 END_RCPP
 }
 // build_M_matrix_interactions_cpp
 NumericMatrix build_M_matrix_interactions_cpp(NumericVector DeltaD_g, NumericVector D_g, int nb_u, int K);
-RcppExport SEXP _distlaghet_build_M_matrix_interactions_cpp(SEXP DeltaD_gSEXP, SEXP D_gSEXP, SEXP nb_uSEXP, SEXP KSEXP) {
+RcppExport SEXP _DistLagHet_build_M_matrix_interactions_cpp(SEXP DeltaD_gSEXP, SEXP D_gSEXP, SEXP nb_uSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -140,8 +142,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // estim_RC_model_interactions_cpp
-List estim_RC_model_interactions_cpp(int K, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericVector D, NumericMatrix X, NumericVector weights);
-RcppExport SEXP _distlaghet_estim_RC_model_interactions_cpp(SEXP KSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP DSEXP, SEXP XSEXP, SEXP weightsSEXP) {
+List estim_RC_model_interactions_cpp(int K, IntegerVector list_g_data, IntegerVector list_g, NumericVector DeltaY, NumericVector DeltaD, NumericVector D, NumericMatrix X, NumericVector weights, bool same_sample);
+RcppExport SEXP _DistLagHet_estim_RC_model_interactions_cpp(SEXP KSEXP, SEXP list_g_dataSEXP, SEXP list_gSEXP, SEXP DeltaYSEXP, SEXP DeltaDSEXP, SEXP DSEXP, SEXP XSEXP, SEXP weightsSEXP, SEXP same_sampleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -153,26 +155,27 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type D(DSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
-    rcpp_result_gen = Rcpp::wrap(estim_RC_model_interactions_cpp(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights));
+    Rcpp::traits::input_parameter< bool >::type same_sample(same_sampleSEXP);
+    rcpp_result_gen = Rcpp::wrap(estim_RC_model_interactions_cpp(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_distlaghet_build_M_matrix_cpp", (DL_FUNC) &_distlaghet_build_M_matrix_cpp, 3},
-    {"_distlaghet_compute_projection_cpp", (DL_FUNC) &_distlaghet_compute_projection_cpp, 1},
-    {"_distlaghet_extract_by_indices_cpp", (DL_FUNC) &_distlaghet_extract_by_indices_cpp, 2},
-    {"_distlaghet_phase1_group_cpp", (DL_FUNC) &_distlaghet_phase1_group_cpp, 6},
-    {"_distlaghet_phase2_group_cpp", (DL_FUNC) &_distlaghet_phase2_group_cpp, 4},
-    {"_distlaghet_estim_RC_model_cpp_full", (DL_FUNC) &_distlaghet_estim_RC_model_cpp_full, 8},
-    {"_distlaghet_build_M_matrix_full_cpp", (DL_FUNC) &_distlaghet_build_M_matrix_full_cpp, 2},
-    {"_distlaghet_estim_RC_model_full_cpp", (DL_FUNC) &_distlaghet_estim_RC_model_full_cpp, 8},
-    {"_distlaghet_build_M_matrix_interactions_cpp", (DL_FUNC) &_distlaghet_build_M_matrix_interactions_cpp, 4},
-    {"_distlaghet_estim_RC_model_interactions_cpp", (DL_FUNC) &_distlaghet_estim_RC_model_interactions_cpp, 8},
+    {"_DistLagHet_build_M_matrix_cpp", (DL_FUNC) &_DistLagHet_build_M_matrix_cpp, 3},
+    {"_DistLagHet_compute_projection_cpp", (DL_FUNC) &_DistLagHet_compute_projection_cpp, 1},
+    {"_DistLagHet_extract_by_indices_cpp", (DL_FUNC) &_DistLagHet_extract_by_indices_cpp, 2},
+    {"_DistLagHet_phase1_group_cpp", (DL_FUNC) &_DistLagHet_phase1_group_cpp, 6},
+    {"_DistLagHet_phase2_group_cpp", (DL_FUNC) &_DistLagHet_phase2_group_cpp, 4},
+    {"_DistLagHet_estim_RC_model_cpp_full", (DL_FUNC) &_DistLagHet_estim_RC_model_cpp_full, 9},
+    {"_DistLagHet_build_M_matrix_full_cpp", (DL_FUNC) &_DistLagHet_build_M_matrix_full_cpp, 2},
+    {"_DistLagHet_estim_RC_model_full_cpp", (DL_FUNC) &_DistLagHet_estim_RC_model_full_cpp, 9},
+    {"_DistLagHet_build_M_matrix_interactions_cpp", (DL_FUNC) &_DistLagHet_build_M_matrix_interactions_cpp, 4},
+    {"_DistLagHet_estim_RC_model_interactions_cpp", (DL_FUNC) &_DistLagHet_estim_RC_model_interactions_cpp, 9},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_distlaghet(DllInfo *dll) {
+RcppExport void R_init_DistLagHet(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

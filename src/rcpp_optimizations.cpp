@@ -205,7 +205,8 @@ List phase2_group_cpp(NumericMatrix M_g, NumericVector DeltaY_Xg_gamma,
 // [[Rcpp::export]]
 List estim_RC_model_cpp_full(int K, IntegerVector list_g_data, IntegerVector list_g,
                              NumericVector DeltaY, NumericVector DeltaD,
-                             NumericVector D, NumericMatrix X, NumericVector weights) {
+                             NumericVector D, NumericMatrix X, NumericVector weights,
+                             bool same_sample = false) {
 
   int nb_c = list_g.size();
   int n = list_g_data.size();
@@ -365,25 +366,52 @@ List estim_RC_model_cpp_full(int K, IntegerVector list_g_data, IntegerVector lis
   // Final aggregation
   NumericVector Nobs(K + 1);
   NumericVector beta_bar_hat_final(K + 1);
+  int n_coefs = K + 1;
 
-  for (int k = 0; k <= K; k++) {
-    double sum_ind = 0.0;
-    double sum_weighted = 0.0;
-    for (int j = 0; j < nb_c; j++) {
-      sum_ind += ind_avg(j, k);
-      sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+  if (same_sample) {
+    std::vector<bool> group_valid(nb_c, true);
+    for (int j = 0; j < nb_c; j++)
+      for (int k = 0; k < n_coefs; k++)
+        if (ind_avg(j, k) == 0) { group_valid[j] = false; break; }
+
+    int n_valid = 0;
+    for (int j = 0; j < nb_c; j++) if (group_valid[j]) n_valid++;
+
+    for (int k = 0; k < n_coefs; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        if (group_valid[j]) {
+          sum_ind += ind_avg(j, k);
+          sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+        }
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
     }
-    Nobs[k] = sum_ind;
-    if (sum_ind > 0) {
-      beta_bar_hat_final[k] = sum_weighted / sum_ind;
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final,
+      Named("n_valid_groups") = n_valid
+    );
+  } else {
+    for (int k = 0; k < n_coefs; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        sum_ind += ind_avg(j, k);
+        sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
     }
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final
+    );
   }
-
-  return List::create(
-    Named("gamma") = gamma,
-    Named("Nobs") = Nobs,
-    Named("B_hat") = beta_bar_hat_final
-  );
 }
 
 
@@ -398,8 +426,7 @@ NumericMatrix build_M_matrix_full_cpp(NumericVector DeltaD_g, int T_periods) {
   int dim = T_periods - 1;
   NumericMatrix M_g(dim, dim);
 
-  // Lower triangular: M_g[i, k+1] = DeltaD_g[i - k + 1] for k = 0..(i-1)
-  // In C++ 0-based: M_g(i, k) = DeltaD_g[i - k + 1] for k = 0..i
+  // Lower triangular: M_g(i, k) = DeltaD_g[i - k + 1] for k = 0..i
   for (int i = 0; i < dim; i++) {
     for (int k = 0; k <= i; k++) {
       M_g(i, k) = DeltaD_g[i - k + 1];
@@ -426,12 +453,12 @@ NumericMatrix build_M_matrix_full_cpp(NumericVector DeltaD_g, int T_periods) {
 List estim_RC_model_full_cpp(int T_periods, IntegerVector list_g_data, IntegerVector list_g,
                               NumericVector DeltaY, NumericVector DeltaD,
                               NumericMatrix X, NumericVector weights,
-                              IntegerVector group_sizes) {
+                              IntegerVector group_sizes, bool same_sample = false) {
 
   int nb_c = list_g.size();
   int n = list_g_data.size();
   int p = X.ncol();
-  int dim = T_periods - 1;  // Number of coefficients
+  int dim = T_periods - 1;
 
   // Count groups with full observations
   int n_full_groups = 0;
@@ -633,24 +660,50 @@ List estim_RC_model_full_cpp(int T_periods, IntegerVector list_g_data, IntegerVe
   NumericVector Nobs(dim);
   NumericVector beta_bar_hat_final(dim);
 
-  for (int k = 0; k < dim; k++) {
-    double sum_ind = 0.0;
-    double sum_weighted = 0.0;
-    for (int j = 0; j < nb_c; j++) {
-      sum_ind += ind_avg(j, k);
-      sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
-    }
-    Nobs[k] = sum_ind;
-    if (sum_ind > 0) {
-      beta_bar_hat_final[k] = sum_weighted / sum_ind;
-    }
-  }
+  if (same_sample) {
+    std::vector<bool> group_valid(nb_c, true);
+    for (int j = 0; j < nb_c; j++)
+      for (int k = 0; k < dim; k++)
+        if (ind_avg(j, k) == 0) { group_valid[j] = false; break; }
 
-  return List::create(
-    Named("gamma") = gamma,
-    Named("Nobs") = Nobs,
-    Named("B_hat") = beta_bar_hat_final
-  );
+    int n_valid = 0;
+    for (int j = 0; j < nb_c; j++) if (group_valid[j]) n_valid++;
+
+    for (int k = 0; k < dim; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        if (group_valid[j]) {
+          sum_ind += ind_avg(j, k);
+          sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+        }
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
+    }
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final,
+      Named("n_valid_groups") = n_valid
+    );
+  } else {
+    for (int k = 0; k < dim; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        sum_ind += ind_avg(j, k);
+        sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
+    }
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final
+    );
+  }
 }
 
 
@@ -710,7 +763,8 @@ NumericMatrix build_M_matrix_interactions_cpp(NumericVector DeltaD_g, NumericVec
 // [[Rcpp::export]]
 List estim_RC_model_interactions_cpp(int K, IntegerVector list_g_data, IntegerVector list_g,
                                       NumericVector DeltaY, NumericVector DeltaD,
-                                      NumericVector D, NumericMatrix X, NumericVector weights) {
+                                      NumericVector D, NumericMatrix X, NumericVector weights,
+                                      bool same_sample = false) {
 
   int nb_c = list_g.size();
   int n = list_g_data.size();
@@ -892,22 +946,48 @@ List estim_RC_model_interactions_cpp(int K, IntegerVector list_g_data, IntegerVe
   NumericVector Nobs(n_params);
   NumericVector beta_bar_hat_final(n_params);
 
-  for (int k = 0; k < n_params; k++) {
-    double sum_ind = 0.0;
-    double sum_weighted = 0.0;
-    for (int j = 0; j < nb_c; j++) {
-      sum_ind += ind_avg(j, k);
-      sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
-    }
-    Nobs[k] = sum_ind;
-    if (sum_ind > 0) {
-      beta_bar_hat_final[k] = sum_weighted / sum_ind;
-    }
-  }
+  if (same_sample) {
+    std::vector<bool> group_valid(nb_c, true);
+    for (int j = 0; j < nb_c; j++)
+      for (int k = 0; k < n_params; k++)
+        if (ind_avg(j, k) == 0) { group_valid[j] = false; break; }
 
-  return List::create(
-    Named("gamma") = gamma,
-    Named("Nobs") = Nobs,
-    Named("B_hat") = beta_bar_hat_final
-  );
+    int n_valid = 0;
+    for (int j = 0; j < nb_c; j++) if (group_valid[j]) n_valid++;
+
+    for (int k = 0; k < n_params; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        if (group_valid[j]) {
+          sum_ind += ind_avg(j, k);
+          sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+        }
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
+    }
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final,
+      Named("n_valid_groups") = n_valid
+    );
+  } else {
+    for (int k = 0; k < n_params; k++) {
+      double sum_ind = 0.0, sum_weighted = 0.0;
+      for (int j = 0; j < nb_c; j++) {
+        sum_ind += ind_avg(j, k);
+        sum_weighted += ind_avg(j, k) * beta_bar_hat(j, k);
+      }
+      Nobs[k] = sum_ind;
+      if (sum_ind > 0) beta_bar_hat_final[k] = sum_weighted / sum_ind;
+    }
+
+    return List::create(
+      Named("gamma") = gamma,
+      Named("Nobs") = Nobs,
+      Named("B_hat") = beta_bar_hat_final
+    );
+  }
 }

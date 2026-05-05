@@ -11,7 +11,7 @@
 #' @return NumericMatrix M_g (nb_u x (K+1))
 #' @keywords internal
 build_M_matrix_cpp <- function(DeltaD_g, nb_u, K) {
-    .Call(`_distlaghet_build_M_matrix_cpp`, DeltaD_g, nb_u, K)
+    .Call(`_DistLagHet_build_M_matrix_cpp`, DeltaD_g, nb_u, K)
 }
 
 #' Compute projection matrix Pi_g efficiently in C++
@@ -22,7 +22,7 @@ build_M_matrix_cpp <- function(DeltaD_g, nb_u, K) {
 #' @return NumericMatrix projection matrix Pi_g
 #' @keywords internal
 compute_projection_cpp <- function(M_g) {
-    .Call(`_distlaghet_compute_projection_cpp`, M_g)
+    .Call(`_DistLagHet_compute_projection_cpp`, M_g)
 }
 
 #' Extract group data efficiently in C++
@@ -34,7 +34,7 @@ compute_projection_cpp <- function(M_g) {
 #' @return Extracted data
 #' @keywords internal
 extract_by_indices_cpp <- function(data, indices) {
-    .Call(`_distlaghet_extract_by_indices_cpp`, data, indices)
+    .Call(`_DistLagHet_extract_by_indices_cpp`, data, indices)
 }
 
 #' Compute weighted projection and store results (Phase 1 loop body)
@@ -50,7 +50,7 @@ extract_by_indices_cpp <- function(data, indices) {
 #' @return List containing M_g, newY_g, newX_g
 #' @keywords internal
 phase1_group_cpp <- function(DeltaY_g, X_g, DeltaD_g, nb_u, K, sqrt_weight) {
-    .Call(`_distlaghet_phase1_group_cpp`, DeltaY_g, X_g, DeltaD_g, nb_u, K, sqrt_weight)
+    .Call(`_DistLagHet_phase1_group_cpp`, DeltaY_g, X_g, DeltaD_g, nb_u, K, sqrt_weight)
 }
 
 #' Compute beta coefficients for group (Phase 2 loop body)
@@ -64,7 +64,7 @@ phase1_group_cpp <- function(DeltaY_g, X_g, DeltaD_g, nb_u, K, sqrt_weight) {
 #' @return List with ind_avg and beta_hat vectors
 #' @keywords internal
 phase2_group_cpp <- function(M_g, DeltaY_Xg_gamma, K, weight_j) {
-    .Call(`_distlaghet_phase2_group_cpp`, M_g, DeltaY_Xg_gamma, K, weight_j)
+    .Call(`_DistLagHet_phase2_group_cpp`, M_g, DeltaY_Xg_gamma, K, weight_j)
 }
 
 #' Full RC model estimation in C++ (base model)
@@ -82,8 +82,8 @@ phase2_group_cpp <- function(M_g, DeltaY_Xg_gamma, K, weight_j) {
 #' @param weights NumericVector, weights for each group
 #' @return List with estimation results
 #' @keywords internal
-estim_RC_model_cpp_full <- function(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights) {
-    .Call(`_distlaghet_estim_RC_model_cpp_full`, K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights)
+estim_RC_model_cpp_full <- function(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample = FALSE) {
+    .Call(`_DistLagHet_estim_RC_model_cpp_full`, K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample)
 }
 
 #' Build lower triangular M matrix for full dynamics model
@@ -93,7 +93,7 @@ estim_RC_model_cpp_full <- function(K, list_g_data, list_g, DeltaY, DeltaD, D, X
 #' @return NumericMatrix M_g (T_periods-1 x T_periods-1)
 #' @keywords internal
 build_M_matrix_full_cpp <- function(DeltaD_g, T_periods) {
-    .Call(`_distlaghet_build_M_matrix_full_cpp`, DeltaD_g, T_periods)
+    .Call(`_DistLagHet_build_M_matrix_full_cpp`, DeltaD_g, T_periods)
 }
 
 #' Full dynamics RC model estimation in C++
@@ -108,8 +108,8 @@ build_M_matrix_full_cpp <- function(DeltaD_g, T_periods) {
 #' @param group_sizes IntegerVector, number of observations per group
 #' @return List with estimation results
 #' @keywords internal
-estim_RC_model_full_cpp <- function(T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes) {
-    .Call(`_distlaghet_estim_RC_model_full_cpp`, T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes)
+estim_RC_model_full_cpp <- function(T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes, same_sample = FALSE) {
+    .Call(`_DistLagHet_estim_RC_model_full_cpp`, T_periods, list_g_data, list_g, DeltaY, DeltaD, X, weights, group_sizes, same_sample)
 }
 
 #' Build M matrix with interactions for interactions model
@@ -121,7 +121,7 @@ estim_RC_model_full_cpp <- function(T_periods, list_g_data, list_g, DeltaY, Delt
 #' @return NumericMatrix M_g with main effects and interactions
 #' @keywords internal
 build_M_matrix_interactions_cpp <- function(DeltaD_g, D_g, nb_u, K) {
-    .Call(`_distlaghet_build_M_matrix_interactions_cpp`, DeltaD_g, D_g, nb_u, K)
+    .Call(`_DistLagHet_build_M_matrix_interactions_cpp`, DeltaD_g, D_g, nb_u, K)
 }
 
 #' Interactions RC model estimation in C++
@@ -136,7 +136,7 @@ build_M_matrix_interactions_cpp <- function(DeltaD_g, D_g, nb_u, K) {
 #' @param weights NumericVector, weights for each group
 #' @return List with estimation results
 #' @keywords internal
-estim_RC_model_interactions_cpp <- function(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights) {
-    .Call(`_distlaghet_estim_RC_model_interactions_cpp`, K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights)
+estim_RC_model_interactions_cpp <- function(K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample = FALSE) {
+    .Call(`_DistLagHet_estim_RC_model_interactions_cpp`, K, list_g_data, list_g, DeltaY, DeltaD, D, X, weights, same_sample)
 }
 
